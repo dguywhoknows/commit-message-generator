@@ -1,4 +1,4 @@
-:root { --accent: #f05033; --add: #1f9d63; --del: #d64545; }
+:root { --accent: #c2502a; --add: #1f9d63; --del: #d64545; }
 #diff { min-height: 300px; font-size: 12px; }
 #msg { font-size: 13px; min-height: 180px; }
 .file { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }

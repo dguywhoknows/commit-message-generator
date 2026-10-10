@@ -1,4 +1,4 @@
-/* core.js — unified-diff parsing, change classification, message linting, pre-commit checks, commit splitting and changelogs (pure, unit-tested). */
+/* Unified-diff parsing, change classification, message linting, pre-commit checks, commit splitting and changelogs (pure, unit-tested). */
 
 function parseDiff(text) {
   var out = [], f = null, hunk = null, oldLn = 0, newLn = 0, m;

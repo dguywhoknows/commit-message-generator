@@ -1,4 +1,4 @@
-/* demo.js — a sample staged diff and a sample git log used on first load. */
+/* A sample staged diff and a sample git log used on first load. */
 var SAMPLE_DIFF = `diff --git a/src/upload/retry.js b/src/upload/retry.js
 new file mode 100644
 index 0000000..3b18bc1
