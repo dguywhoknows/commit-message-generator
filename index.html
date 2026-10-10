@@ -3,114 +3,81 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Commit Crafter</title>
-<meta name="description" content="Paste a git diff to get a Conventional Commit message, a PR description and an AI code review, with a linter for the message itself.">
-<meta name="app-repo" content="https://github.com/dguywhoknows/commit-message-generator">
-<meta name="app-version" content="2.0.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f05033'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='13' fill='white'%3ECC%3C/text%3E%3C/svg%3E">
+<title>Commit Crafter: Paste a diff. Ship a commit you are proud of</title>
+<meta name="description" content="Conventional commit messages, pull request descriptions and a code review, with checks for secrets and debug code.">
+<meta property="og:title" content="Commit Crafter">
+<meta property="og:description" content="Conventional commit messages, pull request descriptions and a code review, with checks for secrets and debug code.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f05033'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='Arial,Helvetica,sans-serif' font-weight='700' font-size='13' fill='white'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/base.css">
-<link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="styles/landing.css">
+<style>:root { --accent: #f05033; }</style>
 </head>
-<body>
-<header class="topbar">
-  <div class="brand"><span class="logo" aria-hidden="true">CC</span><div><h1>Commit Crafter</h1><p>git diff in → great commit message, PR description and review out.</p></div></div>
-  <nav class="topnav" data-nav aria-label="Pages"></nav>
-  <div class="top-actions"><a class="btn ghost sm" href="https://github.com/dguywhoknows/commit-message-generator" target="_blank" rel="noopener">GitHub</a><span data-ai-badge></span></div>
+<body class="landing">
+<header class="l-nav">
+  <a class="l-brand" href="#top"><span class="logo">CC</span><b>Commit Crafter</b></a>
+  <nav aria-label="Sections"><a href="#demo">Demo</a><a href="#ask">Ask it</a><a href="#features">Features</a><a href="#faq">FAQ</a></nav>
+  <div class="l-nav-cta"><a class="btn primary" href="app.html">Open the app</a></div>
 </header>
-<div class="page active" data-page="compose" data-title="Compose">
-<main class="grid cols-2">
-  <section class="stack">
-    <div class="card stack">
-      <div class="row between"><h2 style="margin:0">Diff</h2><span class="small muted">run <code>git diff --staged | clip</code> (or <code>| pbcopy</code>) and paste</span></div>
-      <textarea id="diff" class="mono" spellcheck="false"></textarea>
-      <div class="row"><button class="btn primary" id="parse">Analyze diff</button><span class="small muted" id="parseInfo"></span></div>
-    </div>
-    <div class="card"><div class="row between"><h2 style="margin:0">Pre-commit checks</h2><span class="small muted" id="checkSummary"></span></div><div id="checks" style="margin-top:10px"></div></div>
-    <div class="card"><h2>Files</h2><div id="files"></div></div>
-  </section>
-  <section class="stack">
-    <div class="card stack">
-      <div class="row between"><h2 style="margin:0">Commit message</h2><span class="tag accent" id="guess"></span></div>
-      <div class="row">
-        <select id="style" style="width:auto"><option value="conventional">Conventional Commits</option><option value="plain">Plain / imperative</option></select>
-        <input class="input grow" id="hint" placeholder="Optional context: why did you make this change?">
-        <button class="btn primary" id="gen" disabled>Write</button>
-      </div>
-      <textarea id="msg" class="mono" spellcheck="false" rows="9" placeholder="Your commit message appears here. Edit it freely; the linter updates live."></textarea>
-      <div id="lint" class="lint"></div>
-      <div class="row"><button class="btn sm" id="copyMsg">Copy</button><button class="btn sm ghost" id="copyCmd">Copy as git commit command</button><button class="btn sm ghost" id="wrap">Wrap body</button><button class="btn sm ghost" id="saveMsg">Save to history</button></div>
-    </div>
-    <div class="card">
-      <div class="tabs"><button class="on" data-t="pr">PR description</button><button data-t="review">AI review</button></div>
-      <div id="t-pr"><button class="btn sm" id="prBtn" disabled>Generate PR description</button><div id="pr" class="prose" style="margin-top:12px"></div></div>
-      <div id="t-review" class="hidden"><button class="btn sm" id="revBtn" disabled>Review this diff</button><div id="review" style="margin-top:12px"></div></div>
-    </div>
-  </section>
-</main>
-</div>
-<div class="page" data-page="split" data-title="Split">
-<main class="stack">
-  <div class="page-head"><div><h2>Split into commits</h2><p>Large diffs are easier to review as several focused commits. Tests stay with the code they cover; docs, dependencies and CI go separately.</p></div><button class="btn" id="splitAll">Write all messages</button></div>
-  <div id="splitList" class="stack"></div>
-  <div class="card"><div class="row between"><h2 style="margin:0">Script</h2><button class="btn sm" id="copyScript">Copy</button></div><pre id="splitScript" class="mono small" style="margin-top:10px;white-space:pre-wrap"></pre></div>
-</main>
-</div>
 
-<div class="page" data-page="changelog" data-title="Changelog">
-<main class="grid cols-2">
-  <section class="card stack">
-    <h2 style="margin:0">Git log</h2>
-    <p class="small muted" style="margin:0">Paste <code>git log --oneline v1.4.2..HEAD</code>, or <code>git log --pretty=format:"%h|%s|%an|%ad" --date=short</code> for authors and dates.</p>
-    <textarea id="log" class="mono" spellcheck="false" style="min-height:260px;font-size:12px" aria-label="Git log"></textarea>
-    <div class="grid cols-3">
-      <label>Current version<input class="input mono" id="curVer" value="1.4.2"></label>
-      <label>Release date<input class="input" type="date" id="relDate"></label>
-      <label>Bump<select id="bump"><option value="auto">Auto</option><option value="major">Major</option><option value="minor">Minor</option><option value="patch">Patch</option></select></label>
+<main id="top">
+  <section class="l-hero">
+    <p class="l-kicker">Free · runs in your browser · AI built in</p>
+    <h1>Paste a diff. Ship a commit you are proud of.</h1>
+    <p class="l-sub">Conventional commit messages, pull request descriptions and a code review, with checks for secrets and debug code.</p>
+    <div class="l-actions"><a class="btn primary big" href="app.html">Open the app</a><a class="btn big" href="#demo">See it working</a></div>
+  </section>
+
+  <section class="l-demo reveal" id="demo">
+    <div class="l-window"><div class="l-window-bar"><i></i><i></i><i></i><span>Commit Crafter</span></div>
+      <iframe src="app.html?embed=1" title="Commit Crafter live demo" loading="lazy"></iframe></div>
+    <p class="l-caption">This is the real app running below, not a recording. Try it.</p>
+  </section>
+
+  <section class="l-section reveal" id="ask">
+    <div class="l-head"><p class="l-kicker">Just say what you want</p><h2>Tell it in plain words. It uses its own tools to do it.</h2>
+      <p>Open the AI box in the app, type a request, and the AI drives the app's real features for you: it sets things up, edits, runs and reports back. Standing instructions let you shape every AI feature to how you like to work.</p></div>
+    <div class="l-prompts"><div class="l-prompt"><div class="say">Write the commit message, and mention it fixes issue 42</div><div class="does">Writes the message with the issue reference.</div></div><div class="l-prompt"><div class="say">Split this into separate commits</div><div class="does">Groups the files and writes a message for each.</div></div><div class="l-prompt"><div class="say">Our team requires a scope on every commit</div><div class="does">Updates your conventions so the linter enforces it.</div></div></div>
+  </section>
+
+  <section class="l-section reveal" id="features">
+    <div class="l-head"><p class="l-kicker">What it does</p><h2>Everything in one place</h2></div>
+    <div class="l-grid"><div class="l-card"><h3>Unified diff parser</h3><p>New/deleted/renamed files, hunks, old/new line numbers, binary detection</p></div><div class="l-card"><h3>Collapsible diff viewer</h3><p>Collapsible diff viewer with add/delete stats and change bars</p></div><div class="l-card"><h3>Local commit-type</h3><p>Local commit-type + scope inference (whitespace-only → style, lockfiles → build, tests → test …)</p></div><div class="l-card"><h3>AI commit messages</h3><p>AI commit messages in Conventional Commits / Gitmoji / plain style, with optional &#x27;why&#x27; context</p></div><div class="l-card"><h3>Live message linter</h3><p>72-col subject/body, imperative mood, conventional prefix, blank line, specificity</p></div><div class="l-card"><h3>AI PR description</h3><p>AI PR description (Summary, Changes, How to test, Risks, Checklist)</p></div><div class="l-card"><h3>AI code review with severity, file</h3><p>Line and suggested fixes</p></div><div class="l-card"><h3>Token-budgeted diff packing</h3><p>Token-budgeted diff packing (lockfiles omitted, docs/deps last)</p></div><div class="l-card"><h3>Pre-commit checks on added lines</h3><p>Likely secrets (AWS keys, private keys, tokens, hard-coded passwords), committed .env/key files, merge-conflict markers, debug statements, focused tests and new TODOs</p></div></div>
+  </section>
+
+  <section class="l-section reveal">
+    <div class="l-head"><p class="l-kicker">How it works</p><h2>Real engines where it counts, AI where it helps</h2></div>
+    <div class="l-steps">
+      <div><span>1</span><h3>Open the app</h3><p>No sign-up needed right now. Everything runs in your browser.</p></div>
+      <div><span>2</span><h3>Ask in your own words</h3><p>Type or click. The AI handles commit message generation guided by local type/scope heuristics; pR description generation; structured code review (JSON) over the changed lines.</p></div>
+      <div><span>3</span><h3>Keep what you make</h3><p>Your work is saved in your browser and can be exported any time.</p></div>
     </div>
-    <div class="row"><label class="chk"><input type="checkbox" id="optHash" checked> Include hashes</label><label class="chk"><input type="checkbox" id="optOther"> Include chores and other commits</label></div>
+    <p class="l-note">Computed locally, with no AI involved: diff parsing, viewer, type/scope heuristics, linting, prompt packing, git command builder.</p>
   </section>
-  <section class="stack">
-    <div class="kpis" id="logStats"></div>
-    <div class="card stack"><div class="row between"><h2 style="margin:0">CHANGELOG.md entry</h2><div class="row"><button class="btn sm" id="copyLog">Copy</button><button class="btn sm ghost" id="dlLog">Download</button></div></div><pre id="changelog" class="mono small" style="white-space:pre-wrap;margin:0"></pre></div>
-    <div class="card stack"><div class="row between"><h2 style="margin:0">Release notes</h2><button class="btn sm" id="notesBtn">Write for users</button></div><div id="notes" class="prose"></div></div>
+
+  <section class="l-section reveal" id="faq">
+    <div class="l-head"><p class="l-kicker">Questions</p><h2>Good to know</h2></div>
+    <div class="l-faq">
+      <details><summary>Is it free?</summary><p>Yes. Every feature is free. </p></details>
+      <details><summary>Where is my data stored?</summary><p>What you create stays in this browser on this device. You can export a backup or delete everything from Settings.</p></details>
+      <details><summary>Do I need an API key?</summary><p>Not to try it: the app runs in demo mode with sample AI output. For live AI, connect a free Groq or OpenRouter key in Settings.</p></details>
+      <details><summary>What can I type into the AI box?</summary><p>Anything you would ask a helpful colleague who knows the app, such as: "Write the commit message, and mention it fixes issue 42". It plans the steps, runs the app's own functions and tells you what it did. The Instructions tab saves preferences every AI feature follows.</p></details>
+      <details><summary>Can I see the code?</summary><p>Yes. It is open source under the MIT license on <a href="https://github.com/dguywhoknows/commit-message-generator" rel="noopener">GitHub</a>, with a <a href="tests/">public test suite</a>.</p></details>
+    </div>
+  </section>
+
+  <section class="l-final reveal">
+    <h2>Paste a diff. Ship a commit you are proud of.</h2>
+    <a class="btn primary big" href="app.html">Open the app</a>
   </section>
 </main>
-</div>
 
-<div class="page" data-page="conventions" data-title="Conventions">
-<main class="grid cols-2">
-  <section class="card stack">
-    <h2 style="margin:0">Team rules</h2>
-    <label>Allowed types <span class="small muted">(comma-separated)</span><input class="input mono" id="cTypes"></label>
-    <label>Allowed scopes <span class="small muted">(empty = any)</span><input class="input mono" id="cScopes" placeholder="api, ui, upload"></label>
-    <div class="grid cols-2"><label>Max subject length<input class="input" type="number" id="cMax" min="30" max="120"></label><label>Body width<input class="input" type="number" id="cWidth" min="50" max="120"></label></div>
-    <label class="chk"><input type="checkbox" id="cScopeReq"> Scope is required</label>
-    <label class="chk"><input type="checkbox" id="cIssueReq"> Must reference an issue</label>
-    <label>Issue pattern (regex)<input class="input mono" id="cIssue"></label>
-    <p class="small muted" style="margin:0">The linter on the Compose page uses these rules immediately.</p>
-  </section>
-  <section class="stack">
-    <div class="card stack"><div class="row between"><h2 style="margin:0">commitlint.config.js</h2><button class="btn sm" id="dlLint">Download</button></div><pre id="lintCfg" class="mono small" style="margin:0;white-space:pre-wrap"></pre></div>
-    <div class="card stack"><div class="row between"><h2 style="margin:0">.gitmessage template</h2><button class="btn sm" id="dlTpl">Download</button></div><pre id="gitTpl" class="mono small" style="margin:0;white-space:pre-wrap"></pre><p class="small muted" style="margin:0">Enable it with <code>git config commit.template .gitmessage</code></p></div>
-  </section>
-</main>
-</div>
-
-<div class="page" data-page="history" data-title="History">
-<main class="stack">
-  <div class="page-head"><div><h2>Saved messages</h2><p id="histSummary"></p></div><input class="input" id="histSearch" placeholder="Search" style="max-width:260px" aria-label="Search history"></div>
-  <div id="histList" class="stack"></div>
-</main>
-</div>
-
-<div class="page" data-page="settings" data-title="Settings"></div>
-<script src="src/lib/dom.js"></script>
-<script src="src/lib/ai.js"></script>
-<script src="src/lib/router.js"></script>
-<script src="src/core.js"></script>
-<script src="src/demo.js"></script>
-<script src="src/app.js"></script>
+<footer class="l-foot"><span>Commit Crafter</span><span><a href="https://github.com/dguywhoknows/commit-message-generator" rel="noopener">Source</a> · <a href="tests/">Tests</a> · MIT license</span></footer>
+<script>
+document.querySelectorAll('.reveal').forEach((el) => el.classList.add('pre'));
+const io = new IntersectionObserver((es) => es.forEach((x) => { if (x.isIntersecting) { x.target.classList.remove('pre'); io.unobserve(x.target); } }), { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
 </body>
 </html>
