@@ -8,7 +8,7 @@ Live: https://dguywhoknows.github.io/commit-message-generator/
 
 ## Overview
 
-Commit Crafter parses unified diffs: added, deleted and renamed files, hunks, line numbers, binary files. It renders them as a collapsible diff viewer with per-file change bars. Local heuristics guess the commit type (docs, test, ci, build, style for whitespace-only changes, fix, refactor, perf, feat) and a scope from the common directory. The AI then writes the message in Conventional Commits, Gitmoji or plain style, drafts a PR description, and reviews the changed lines with file:line comments. A live linter checks the message against the usual rules.
+Commit Writer parses unified diffs: added, deleted and renamed files, hunks, line numbers, binary files. It renders them as a collapsible diff viewer with per-file change bars. Local heuristics guess the commit type (docs, test, ci, build, style for whitespace-only changes, fix, refactor, perf, feat) and a scope from the common directory. The AI then writes the message in Conventional Commits, Gitmoji or plain style, drafts a PR description, and reviews the changed lines with file:line comments. A live linter checks the message against the usual rules.
 
 ## Pages
 
